@@ -83,6 +83,7 @@ namespace Endgames {
 
     add<KRPKR>("KRPKR");
     add<KRPKB>("KRPKB");
+    add<KRPKBP>("KRPKBP");
     add<KBPKB>("KBPKB");
     add<KBPKN>("KBPKN");
     add<KBPPKB>("KBPPKB");
@@ -543,6 +544,27 @@ ScaleFactor Endgame<KRPKB>::operator()(const Position& pos) const {
           && distance<File>(weakBishop, strongPawn) >= 2)
           return ScaleFactor(8);
   }
+
+  return SCALE_FACTOR_NONE;
+}
+
+template<>
+ScaleFactor Endgame<KRPKBP>::operator()(const Position& pos) const {
+
+  assert(verify_material(pos, strongSide, RookValueMg, 1));
+  assert(verify_material(pos, weakSide, BishopValueMg, 1));
+
+  Square weakKing = pos.square<KING>(weakSide);
+  Square weakBishop = pos.square<BISHOP>(weakSide);
+  Square strongPawn = pos.square<PAWN>(strongSide);
+  Square strongKing = pos.square<KING>(strongSide);
+  Square weakPawn   = pos.square<PAWN>(weakSide);
+  Direction push = pawn_push(strongSide);
+
+  if (   strongPawn + push == weakPawn
+      && PseudoAttacks[BISHOP][weakBishop] & strongPawn
+      && distance(weakKing, weakPawn) < distance(strongKing, weakPawn))
+      return ScaleFactor(20);
 
   return SCALE_FACTOR_NONE;
 }
