@@ -563,6 +563,7 @@ ScaleFactor Endgame<KRPKBP>::operator()(const Position& pos) const {
 
   if (   strongPawn + push == weakPawn
       && PseudoAttacks[BISHOP][weakBishop] & strongPawn
+      && distance(weakKing, weakPawn) <= 2
       && distance(weakKing, weakPawn) < distance(strongKing, weakPawn))
       return ScaleFactor(20);
 
