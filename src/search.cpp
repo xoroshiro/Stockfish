@@ -931,6 +931,8 @@ moves_loop: // When in check, search starts from here
                                           nullptr                   , (ss-6)->continuationHistory };
 
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
+    int fullSearchCount = ss->fullSearchCount;
+    ss->fullSearchCount = 0;
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->lowPlyHistory,
@@ -1160,6 +1162,10 @@ moves_loop: // When in check, search starts from here
           if (cutNode)
               r += 1 + !captureOrPromotion;
 
+          if (   fullSearchCount <= ss->fullSearchCount
+              && fullSearchCount > 1)
+              r++;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~3 Elo)
@@ -1187,6 +1193,8 @@ moves_loop: // When in check, search starts from here
           // If the son is reduced and fails high it will be re-searched at full depth
           doFullDepthSearch = value > alpha && d < newDepth;
           didLMR = true;
+          if (d >= newDepth)
+              ss->fullSearchCount++;
       }
       else
       {
@@ -1198,6 +1206,8 @@ moves_loop: // When in check, search starts from here
       if (doFullDepthSearch)
       {
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
+
+          ss->fullSearchCount++;
 
           // If the move passed LMR update its stats
           if (didLMR && !captureOrPromotion)
